@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAE GA 蜃ｺ蜉帙ず繧ｧ繝阪Ξ繝ｼ繧ｿ繝ｼ</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input { width: 50px; margin: 5px; }
+        button { margin: 10px; padding: 5px 15px; }
+        pre { background: #f4f4f4; padding: 10px; display: inline-block; white-space: pre-wrap; word-wrap: break-word; max-width: 90%; }
+    </style>
+</head>
+<body>
+    <h2>NAE GA 蜃ｺ蜉帙ず繧ｧ繝阪Ξ繝ｼ繧ｿ繝ｼ</h2>
+    
+    <!-- 蜷�が繝励す繝ｧ繝ｳ險ｭ螳� -->
+    <label>NAE 郢ｰ繧願ｿ斐＠蝗樊焚 (譛蟆�):</label>
+    <input type="number" id="minRepeat" value="2" min="1" max="10">
+    
+    <label>NAE 郢ｰ繧願ｿ斐＠蝗樊焚 (譛螟ｧ):</label>
+    <input type="number" id="maxRepeat" value="3" min="1" max="10"><br>
+
+    <label>GA 謖ｿ蜈･遒ｺ邇� (%):</label>
+    <input type="number" id="gaProbability" value="50" min="0" max="100"><br>
+
+    <label>"NAE GA" 繧ｻ繝�ヨ郢ｰ繧願ｿ斐＠蝗樊焚:</label>
+    <input type="number" id="naegaRepeat" value="2" min="1" max="10"><br>
+
+    <label>蜈ｨ菴薙�郢ｰ繧願ｿ斐＠蝗樊焚:</label>
+    <input type="number" id="totalRepeat" value="10" min="1" max="50"><br>
+
+    <label>
+        <input type="checkbox" id="forceGA"> GA 繧貞ｿ�★ 1 蝗槫性繧√ｋ
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="noOnlyNAE"> NAE 縺�縺代�繝代ち繝ｼ繝ｳ繧定ｨｱ蜿ｯ縺励↑縺�
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="gaAfterNAE"> GA 縺ｮ蠕後↓蠢�★ NAE 繧貞�繧後ｋ
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="limitNAE"> NAE 縺ｮ譛螟ｧ騾｣邯壼屓謨ｰ繧貞宛髯舌☆繧�
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="sameBlockLength"> 繝悶Ο繝�け縺ｮ髟ｷ縺輔ｒ荳螳壹↓縺吶ｋ
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="alternateGA"> GA 縺ｨ NAE 繧貞酔縺伜屓謨ｰ縺ｧ莠､莠偵↓郢ｰ繧願ｿ斐☆
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="randomBlockLength"> 繝悶Ο繝�け縺斐→縺ｫ繝ｩ繝ｳ繝繝�縺ｪ髟ｷ縺輔ｒ險ｭ螳�
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="orderRule"> 蜃ｺ蜉帙�鬆�分縺ｫ隕丞援繧貞刈縺医ｋ
+    </label><br>
+
+    <label>
+        <input type="checkbox" id="customProbabilities"> NAE 縺ｨ GA 縺ｮ蜃ｺ迴ｾ遒ｺ邇�ｒ蛟句挨縺ｫ險ｭ螳�
+    </label><br>
+
+    <button onclick="generateSequence()">逕滓�</button>
+    
+    <h3>蜃ｺ蜉�:</h3>
+    <pre id="output"></pre>
+
+    <script>
+        function generateSequence() {
+            let minRepeat = parseInt(document.getElementById("minRepeat").value);
+            let maxRepeat = parseInt(document.getElementById("maxRepeat").value);
+            let gaProbability = parseInt(document.getElementById("gaProbability").value) / 100;
+            let naegaRepeat = parseInt(document.getElementById("naegaRepeat").value);
+            let totalRepeat = parseInt(document.getElementById("totalRepeat").value);
+            let forceGA = document.getElementById("forceGA").checked;
+            let noOnlyNAE = document.getElementById("noOnlyNAE").checked;
+            let gaAfterNAE = document.getElementById("gaAfterNAE").checked;
+            let limitNAE = document.getElementById("limitNAE").checked;
+            let sameBlockLength = document.getElementById("sameBlockLength").checked;
+            let alternateGA = document.getElementById("alternateGA").checked;
+            let randomBlockLength = document.getElementById("randomBlockLength").checked;
+            let orderRule = document.getElementById("orderRule").checked;
+            let customProbabilities = document.getElementById("customProbabilities").checked;
+            
+            let naeProbability = 1 - gaProbability; // NAE 縺ｮ遒ｺ邇�� GA 縺ｮ遒ｺ邇�↓蝓ｺ縺･縺�
+            let sequence = [];
+
+            for (let i = 0; i < totalRepeat; i++) {
+                let numRepeats = sameBlockLength ? Math.floor(Math.random() * (maxRepeat - minRepeat + 1)) + minRepeat : 4; // 萓�: 4縺ｧ蝗ｺ螳�
+                let segment = [];
+                let lastItem = "";
+                let naeCount = 0;
+
+                for (let j = 0; j < numRepeats; j++) {
+                    let isGA = Math.random() < gaProbability;
+
+                    if (isGA && lastItem !== "GA") {
+                        segment.push("GA");
+                        lastItem = "GA";
+                        naeCount = 0;  // NAE 騾｣邯壹き繧ｦ繝ｳ繝医ｒ繝ｪ繧ｻ繝�ヨ
+                    } else {
+                        naeCount++;
+                        if (limitNAE && naeCount === 5) {
+                            segment.push("NAE"); // 蛻ｶ髯�
+                        } else {
+                            segment.push("NAE");
+                        }
+                        lastItem = "NAE";
+                    }
+
+                    // GA 蠕後↓蠢�★ NAE繧貞�繧後ｋ
+                    if (gaAfterNAE && lastItem === "GA") {
+                        segment.push("NAE");
+                    }
+                }
+
+                sequence.push(...segment);
+            }
+
+            // 50譁�ｭ励＃縺ｨ縺ｫ謾ｹ陦後ｒ霑ｽ蜉�
+            let formattedOutput = sequence.join(" ");
+            formattedOutput = formattedOutput.replace(/(.{50})/g, "$1\n");
+
+            document.getElementById("output").innerText = formattedOutput;
+        }
+    </script>
+</body>
+</html>
